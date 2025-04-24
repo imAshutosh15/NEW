@@ -11,14 +11,14 @@ const httpServer = http.createServer(app)
 const io = new Server(httpServer);
 
 io.on('connection', (socket)=> {
-    console.log("A User Connected");
+    io.emit('message', "A User Connected");
     socket.on('message', (data)=>{
         io.emit('message',data);
     })
 });
 
 httpServer.listen(3001,()=> console.log('Server with websocket is runnig'));
-
+export { io };
 app.use(express.json());
 app.use(cookieParser());
 app.use("/api", router)

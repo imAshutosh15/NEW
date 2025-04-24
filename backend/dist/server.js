@@ -3,6 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.io = void 0;
 const express_1 = __importDefault(require("express"));
 const routes_1 = __importDefault(require("./routes"));
 const http_1 = __importDefault(require("http"));
@@ -11,8 +12,9 @@ const cookieParser = require('cookie-parser');
 const app = (0, express_1.default)();
 const httpServer = http_1.default.createServer(app);
 const io = new socket_io_1.Server(httpServer);
+exports.io = io;
 io.on('connection', (socket) => {
-    console.log("A User Connected");
+    io.emit('message', "A User Connected");
     socket.on('message', (data) => {
         io.emit('message', data);
     });

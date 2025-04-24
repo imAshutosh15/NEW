@@ -2,7 +2,7 @@ import express, { Router, Request, Response, NextFunction } from 'express';
 import bcrypt from "bcrypt";
 import {z} from 'zod';
 import { cacheMiddleware , setCache} from "./redis";
-
+import { io } from "./server"; 
 
 import { generateJsonWebToken, verifyToken } from "./jwt";
 import { PrismaClient } from '../prisma/generated';
@@ -23,6 +23,7 @@ router.post("/createUser", async (req, res) => {
         let validatedData = userSchema.parse(req.body);
         validatedData.password = await bcrypt.hash(validatedData.password, 5)
         const user = await prisma.userDetails.create({ data: { email: validatedData.email, password: validatedData.password } });
+        io.emit("user_created", user);
         res.json({
             "status": true,
             "user": user
@@ -49,6 +50,7 @@ router.post("/loginUser", async (req, res) => {
     if (userById && isMatch) {
 
         const token = generateJsonWebToken(email, hashedPassword);
+        io.emit("user_loggedin", req.body);
         res.cookie('token', token, { httpOnly: true, secure: true })
         res.json({
             "status": true,

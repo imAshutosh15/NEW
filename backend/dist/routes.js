@@ -16,6 +16,7 @@ const express_1 = require("express");
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const zod_1 = require("zod");
 const redis_1 = require("./redis");
+const server_1 = require("./server");
 const jwt_1 = require("./jwt");
 const generated_1 = require("../prisma/generated");
 const router = (0, express_1.Router)();
@@ -29,6 +30,7 @@ router.post("/createUser", (req, res) => __awaiter(void 0, void 0, void 0, funct
         let validatedData = userSchema.parse(req.body);
         validatedData.password = yield bcrypt_1.default.hash(validatedData.password, 5);
         const user = yield prisma.userDetails.create({ data: { email: validatedData.email, password: validatedData.password } });
+        server_1.io.emit("user_created", user);
         res.json({
             "status": true,
             "user": user
@@ -55,6 +57,7 @@ router.post("/loginUser", (req, res) => __awaiter(void 0, void 0, void 0, functi
     const isMatch = yield bcrypt_1.default.compare(password, userById === null || userById === void 0 ? void 0 : userById.password);
     if (userById && isMatch) {
         const token = (0, jwt_1.generateJsonWebToken)(email, hashedPassword);
+        server_1.io.emit("user_loggedin", req.body);
         res.cookie('token', token, { httpOnly: true, secure: true });
         res.json({
             "status": true,
